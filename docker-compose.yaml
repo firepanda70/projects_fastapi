@@ -1,0 +1,39 @@
+services:
+
+  pg:
+    image: postgres:16.1
+    env_file:
+      - ./.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.2.4
+    env_file:
+      - ./.env
+    command:
+      - 'redis-server'
+      - '--requirepass $REDIS_PASS'
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    env_file:
+      - ./.env
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "1g"
+    volumes:
+      - ./:/app
+    depends_on:
+      - pg
+    ports:
+      - "80:80"
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 80
+
+volumes:
+  postgres_data:
