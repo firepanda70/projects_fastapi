@@ -32,8 +32,8 @@ part_request_router = APIRouter()
     status_code=status.HTTP_201_CREATED
 )
 async def create_part_request(
-    project: Project = Depends(valid_project),
     user_id: int = Depends(valid_token),
+    project: Project = Depends(valid_project),
     part_req_service: PartReqService = Depends(PartReqService),
     transaction: AsyncTransaction = Depends(AsyncTransaction),
     session: AsyncSession = Depends(get_async_session)

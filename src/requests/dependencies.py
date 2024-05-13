@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import Depends
 from pydantic import PositiveInt
 
@@ -12,6 +14,8 @@ from .exceptions import (
 from .service import PartReqService
 from .models import PartisipationRequest
 
+logger = logging.getLogger(__name__)
+
 
 async def existing_part_request(
     part_request_id: PositiveInt,
@@ -22,12 +26,15 @@ async def existing_part_request(
     if not objs:
         raise PartRequestNotFound
     if len(objs) != 1:
+        logger.critical('More than one partisipation request '
+                        f'found on filter id: {part_request_id}; '
+                        f'project id: {project.id}')
         raise ServerError
     return objs[0]
 
 async def valid_partisipation_request(
-    project: Project = Depends(valid_project),
     user_id: int = Depends(check_not_partisipant),
+    project: Project = Depends(valid_project),
     part_req_service: PartReqService = Depends(PartReqService)
 ) -> Project:
     if await part_req_service.filter(project, user_id, RequestStatus.NEW):

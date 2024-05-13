@@ -1,7 +1,7 @@
 from typing import Sequence
 
 from sqlalchemy import select, update, func, and_
-from sqlalchemy.orm import selectinload, contains_eager
+from sqlalchemy.orm import selectinload, contains_eager, joinedload
 
 from src.core.service import BaseService
 from src.groups.models import Group, GroupToPartisipant
@@ -16,12 +16,11 @@ class ProjectService(BaseService[Project]):
         expr = select(Project
             ).where(Project.id == id
             ).options(
-                selectinload(Project.user_partisipants),
-                selectinload(Project.partisipations),
-                selectinload(Project.groups),
-                selectinload(Project.groups, Group.partisipants),
+                joinedload(Project.partisipations),
+                joinedload(Project.groups),
+                joinedload(Project.groups, Group.partisipants),
             )
-        return (await self.session.execute(expr)).scalar_one_or_none()
+        return (await self.session.execute(expr)).unique().scalar_one_or_none()
 
     async def get_many(self) -> Sequence[tuple[Project, int]]:
         expr = select(

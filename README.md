@@ -1,4 +1,4 @@
-# projects_fastapi# shortener_fastapi
+# projects_fastapi
 Project control service. Python 3.12 + FastAPI
 
 ## Requirements

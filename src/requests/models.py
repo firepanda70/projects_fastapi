@@ -13,9 +13,13 @@ class PartisipationRequest(BaseDBModel, TimeStampMixin):
     processed_by_id: Mapped[int | None] = mapped_column(ForeignKey(User.id))
     status: Mapped[RequestStatus] = mapped_column(default=RequestStatus.NEW)
 
-    project: Mapped[Project] = relationship(back_populates='part_req_assotiations')
+    project: Mapped[Project] = relationship(
+        back_populates='part_req_assotiations',
+        overlaps='part_req_assotiations'
+    )
     user_from: Mapped[User] = relationship(
         back_populates='requests',
+        overlaps='requests',
         foreign_keys=[user_from_id],
         lazy='joined'
     )

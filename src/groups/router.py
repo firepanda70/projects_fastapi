@@ -7,8 +7,9 @@ from src.core.database import AsyncTransaction, get_async_session
 from src.projects.models import Project
 from src.projects.dependencies import valid_project
 from src.partisipants.models import Partisipant
-from src.partisipants.schemas import PartisipantDB
-from src.partisipants.dependencies import valid_project_partisipant, check_partisipant
+from src.partisipants.service import PartisipantService
+from src.partisipants.schemas import PartisipantDBFull
+from src.partisipants.dependencies import check_partisipant
 from .models import Group
 from .services import GroupService, GroupToPartService
 from .schemas import GroupDB, GroupCreate, GroupUpdate
@@ -106,16 +107,16 @@ async def delete_group(
 async def grant_group(
     partisipant: Partisipant = Depends(valid_group_grant_partisipant),
     group: Group = Depends(valid_group),
+    partisipant_service: PartisipantService = Depends(PartisipantService),
     group_to_part_serice: GroupToPartService = Depends(GroupToPartService),
     transanction: AsyncTransaction = Depends(AsyncTransaction),
-    session: AsyncSession = Depends(get_async_session)
-) -> PartisipantDB:
+) -> PartisipantDBFull:
+    partisipnat_id = partisipant.id
     async with transanction as id:
         grant = await group_to_part_serice.grant(group, partisipant)
         logger.info((f'group {group.id} granted to partisipant {partisipant.id}, '
                      f'id {grant.id}, transanction: {id}'))
-    await session.refresh(partisipant)
-    return partisipant
+    return await partisipant_service.get_full(partisipnat_id)
 
 @group_router.post(
     '/{project_id}/groups/{group_name}/revoke',
@@ -126,13 +127,13 @@ async def grant_group(
 async def revoke_group(
     partisipant: Partisipant = Depends(valid_group_revoke_partisipant),
     group: Group = Depends(valid_group),
+    partisipant_service: PartisipantService = Depends(PartisipantService),
     group_to_part_serice: GroupToPartService = Depends(GroupToPartService),
-    transanction: AsyncTransaction = Depends(AsyncTransaction),
-    session: AsyncSession = Depends(get_async_session)
-) -> PartisipantDB:
+    transanction: AsyncTransaction = Depends(AsyncTransaction)
+) -> PartisipantDBFull:
+    partisipnat_id = partisipant.id
     async with transanction as id:
         await group_to_part_serice.revoke(group, partisipant)
-        logger.info((f'group {group.id} revoled from partisipant {partisipant.id}, '
+        logger.info((f'group {group.id} revoked from partisipant {partisipant.id}, '
                      f'transanction: {id}'))
-    await session.refresh(partisipant)
-    return partisipant
+    return await partisipant_service.get_full(partisipnat_id)

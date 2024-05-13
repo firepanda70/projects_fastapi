@@ -23,13 +23,15 @@ class Group(BaseDBModel, TimeStampMixin):
     request_edit: Mapped[bool] = mapped_column(default=False)
     partis_delete: Mapped[bool] = mapped_column(default=False)
 
-    project: Mapped[Project] = relationship(back_populates='groups')
+    project: Mapped[Project] = relationship(
+        back_populates='groups', overlaps='groups'
+    )
     part_assotiations: Mapped[list['GroupToPartisipant']] = relationship(
         back_populates='group', cascade='all,delete'
     )
     partisipants: Mapped[list[Partisipant]] = relationship(
         secondary='group_to_partisipant', back_populates='groups',
-        overlaps='groups_assotiations'
+        viewonly=True
     )
 
     __table_args__ = (
@@ -42,9 +44,9 @@ class GroupToPartisipant(BaseDBModel):
     partisipant_id: Mapped[int] = mapped_column(ForeignKey(Partisipant.id))
     group: Mapped[Group] = relationship(
         back_populates='part_assotiations',
-        overlaps='groups,partisipants'
+        overlaps='part_assotiations'
     )
     partisipant: Mapped[Partisipant] = relationship(
         back_populates='groups_assotiations',
-        overlaps='groups,partisipants'
+        overlaps='groups_assotiations'
     )

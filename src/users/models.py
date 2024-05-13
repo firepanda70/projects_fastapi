@@ -14,7 +14,7 @@ class User(BaseDBModel, TimeStampMixin):
         'Partisipant', back_populates='user', cascade='all,delete'
     )
     partisipations = relationship(
-        'Project', secondary='partisipant',
+        'Project', secondary='partisipant', viewonly=True,
         back_populates='user_partisipants', cascade='all,delete'
     )
     requests = relationship(

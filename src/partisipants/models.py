@@ -10,13 +10,20 @@ class Partisipant(BaseDBModel, TimeStampMixin):
     project_id: Mapped[int] = mapped_column(ForeignKey(Project.id))
     user_id: Mapped[int] = mapped_column(ForeignKey(User.id))
 
-    project: Mapped[Project] = relationship(back_populates='partisipations')
+    project: Mapped[Project] = relationship(
+        back_populates='partisipations',
+        overlaps='partisipations'
+    )
     user: Mapped[User] = relationship(
-        back_populates='part_assotiations', lazy='joined'
+        back_populates='part_assotiations',
+        overlaps='part_assotiations',
+        lazy='joined'
     )
     groups_assotiations = relationship(
-        'GroupToPartisipant', back_populates='partisipant', cascade='all,delete'
+        'GroupToPartisipant', back_populates='partisipant',
+        cascade='all,delete'
     )
     groups = relationship(
-        'Group', secondary='group_to_partisipant', back_populates='partisipants'
+        'Group', secondary='group_to_partisipant',
+        back_populates='partisipants', viewonly=True
     )

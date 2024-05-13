@@ -1,7 +1,7 @@
 from typing import Sequence
 
 from sqlalchemy import select
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, joinedload
 
 from src.core.service import BaseService
 from src.projects.models import Project
@@ -12,6 +12,12 @@ from .models import Partisipant
 
 class PartisipantService(BaseService[Partisipant]):
     model = Partisipant
+    async def get_full(self, id: int):
+        expr = select(Partisipant).where(
+            Partisipant.id == id
+        ).options(joinedload(Partisipant.groups))
+        return (await self.session.execute(expr)).unique().scalar_one_or_none()
+
     async def create(self, project: Project, user_id: int) -> Partisipant:
         partisipation = Partisipant(
             project_id=project.id, user_id=user_id
@@ -38,7 +44,7 @@ class PartisipantService(BaseService[Partisipant]):
         self, project: Project, filter: GroupRightsFilter
     ) -> Sequence[Partisipant]:
         expr = select(Partisipant
-            ).join(Partisipant.groups
+            ).join(Partisipant.groups, isouter=True
             ).where(Partisipant.project_id==project.id)
         if filter.group_names:
             expr = expr.where(Group.name.in_(filter.group_names))

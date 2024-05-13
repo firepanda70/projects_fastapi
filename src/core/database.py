@@ -1,6 +1,8 @@
 import logging
 import string
 import random
+import calendar
+from datetime import datetime
 
 from fastapi import Depends
 from sqlalchemy.orm import sessionmaker
@@ -21,7 +23,12 @@ async def get_async_session():
 class AsyncTransaction:
     def __init__(self, session: AsyncSession = Depends(get_async_session)):
         self.session = session
-        self.id = ''.join(random.choices(string.ascii_uppercase, k=8))
+        self.id = (
+            '-'.join((
+                str(calendar.timegm(datetime.now().utctimetuple())),
+                ''.join(random.choices(string.ascii_uppercase, k=3)),
+            ))
+        )
 
     async def __aenter__(self):
         logger.info(f'Transanction {self.id} iniciated')
